@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<!-- saved from url=(0039)file:///Users/rosy/Downloads/index.html -->
+<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>我的食譜</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#fff;--bg2:#f5f5f0;--bg3:#eeeee8;
+  --text:#1a1a1a;--text2:#666;--text3:#999;
+  --border:#e0e0d8;--border2:#ccc;
+  --blue:#185FA5;--blue-bg:#E6F1FB;
+  --green:#1D9E75;--green-bg:#EAF3DE;--green-text:#3B6D11;
+  --amber:#EF9F27;--amber-bg:#FAEEDA;--amber-text:#854F0B;
+  --red:#E24B4A;--red-bg:#FCEBEB;--red-text:#A32D2D;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg2);color:var(--text);min-height:100vh;}
+
+/* Layout */
+.app{max-width:480px;margin:0 auto;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;position:relative;}
+.topbar{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:10;}
+.topbar-title{font-size:18px;font-weight:600;}
+.topbar-btn{background:none;border:none;font-size:22px;cursor:pointer;padding:4px;color:var(--text);}
+.content{flex:1;padding:14px 16px 90px;overflow-y:auto;}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--bg);border-top:1px solid var(--border);display:flex;z-index:10;}
+.nav-btn{flex:1;padding:10px 4px 12px;text-align:center;border:none;background:none;cursor:pointer;font-size:11px;color:var(--text3);display:flex;flex-direction:column;align-items:center;gap:3px;}
+.nav-btn.active{color:var(--blue);}
+.nav-icon{font-size:20px;}
+
+/* Pages */
+.page{display:none;}.page.active{display:block;}
+
+/* Search & tags */
+.search-wrap{position:relative;margin-bottom:12px;}
+.search-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px 9px 36px;font-size:15px;outline:none;}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text3);}
+.tags-row{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px;scrollbar-width:none;}
+.tags-row::-webkit-scrollbar{display:none;}
+.tag{white-space:nowrap;font-size:13px;padding:5px 12px;border-radius:999px;border:1px solid var(--border2);color:var(--text2);background:var(--bg);cursor:pointer;}
+.tag.active{background:var(--blue-bg);color:var(--blue);border-color:var(--blue);}
+
+/* Recipe cards */
+.recipe-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;}
+.recipe-emoji{width:56px;height:56px;border-radius:var(--radius);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.recipe-info{flex:1;min-width:0;}
+.recipe-name{font-size:15px;font-weight:600;margin-bottom:3px;}
+.recipe-meta{font-size:12px;color:var(--text2);margin-bottom:6px;}
+.recipe-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.rtag{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--bg2);color:var(--text2);}
+.rtag.blue{background:var(--blue-bg);color:var(--blue);}
+.rtag.green{background:var(--green-bg);color:var(--green-text);}
+.rtag.amber{background:var(--amber-bg);color:var(--amber-text);}
+.empty-state{text-align:center;padding:48px 16px;color:var(--text3);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+
+/* Section label */
+.sec-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin:16px 0 8px;}
+.sec-label:first-child{margin-top:0;}
+
+/* FAB */
+.fab{position:fixed;bottom:72px;right:calc(50% - 240px + 16px);width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;font-size:26px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(24,95,165,.35);z-index:9;}
+@media(max-width:480px){.fab{right:16px;}}
+
+/* Detail page */
+.back-btn{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--blue);cursor:pointer;padding:0 0 12px;border:none;background:none;}
+.detail-hero{background:var(--bg2);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px;display:flex;gap:14px;align-items:center;}
+.detail-emoji{font-size:52px;}
+.detail-title{font-size:18px;font-weight:600;margin-bottom:4px;}
+.detail-sub{font-size:13px;color:var(--text2);}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:12px;}
+.card-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+.ingredient-row{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.ingredient-row:last-child{border:none;}
+.ing-amt{color:var(--text2);font-size:13px;min-width:64px;}
+.step-row{display:flex;gap:10px;padding:6px 0;font-size:14px;line-height:1.55;}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--blue-bg);color:var(--blue);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.prep-tip{display:flex;gap:8px;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);}
+.prep-tip:last-child{border:none;}
+.prep-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:6px;}
+.detail-actions{display:flex;gap:8px;margin-bottom:14px;}
+.action-btn{flex:1;padding:10px;border-radius:var(--radius);border:1px solid var(--border2);background:none;font-size:14px;cursor:pointer;color:var(--text);}
+.action-btn.danger{color:var(--red);border-color:var(--red);}
+
+/* Prep page */
+.seg{display:flex;background:var(--bg2);border-radius:var(--radius);padding:3px;gap:2px;margin-bottom:14px;}
+.seg-btn{flex:1;text-align:center;padding:7px 4px;font-size:13px;color:var(--text2);border-radius:6px;cursor:pointer;border:none;background:none;}
+.seg-btn.active{background:var(--bg);color:var(--text);font-weight:600;border:1px solid var(--border);}
+.stock-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.stock-card.warn{border-color:var(--amber);}
+.stock-card.danger{border-color:var(--red);}
+.stock-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.stock-info{flex:1;min-width:0;}
+.stock-name{font-size:15px;font-weight:600;margin-bottom:2px;}
+.stock-sub{font-size:12px;color:var(--text2);}
+.stock-badge{font-size:11px;padding:3px 9px;border-radius:999px;white-space:nowrap;}
+.badge-ok{background:var(--green-bg);color:var(--green-text);}
+.badge-warn{background:var(--amber-bg);color:var(--amber-text);}
+.badge-danger{background:var(--red-bg);color:var(--red-text);}
+.stock-del{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px;}
+.method-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;}
+.method-header{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.method-emoji{font-size:22px;}
+.method-name{font-size:15px;font-weight:600;flex:1;}
+.method-arrow{font-size:12px;color:var(--text3);transition:transform .2s;}
+.method-arrow.open{transform:rotate(90deg);}
+.method-body{display:none;border-top:1px solid var(--border);padding:10px 14px 12px;}
+.method-body.open{display:block;}
+
+/* Week page */
+.week-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.week-cell{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;min-height:72px;}
+.week-cell.today{border-color:var(--blue);}
+.week-day{font-size:11px;color:var(--text3);margin-bottom:4px;}
+.week-cell.today .week-day{color:var(--blue);font-weight:600;}
+.week-meal{font-size:13px;font-weight:600;color:var(--text);line-height:1.4;}
+.week-meal.empty{color:var(--text3);font-weight:400;}
+.week-info{background:var(--blue-bg);border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--blue);margin-bottom:14px;}
+
+/* Shopping */
+.shop-cat-label{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px;}
+.shop-cat-label:first-child{margin-top:0;}
+.shop-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;cursor:pointer;}
+.shop-item.checked{opacity:.45;}
+.shop-name{flex:1;font-size:14px;}
+.shop-item.checked .shop-name{text-decoration:line-through;}
+.shop-amt{font-size:13px;color:var(--text2);}
+.shop-circle{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.shop-circle.done{background:var(--green);border-color:var(--green);color:#fff;}
+.shop-del{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px;}
+.shop-progress{background:var(--bg2);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.prog-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:999px;margin:0 12px;}
+.prog-bar{height:100%;background:var(--green);border-radius:999px;transition:width .3s;}
+
+/* Forms */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:20px 16px 32px;}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:16px;}
+.field{margin-bottom:14px;}
+.field-label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-size:15px;color:var(--text);font-family:inherit;outline:none;}
+.field input:focus,.field select,.field textarea:focus{border-color:var(--blue);}
+.field textarea{resize:none;line-height:1.6;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.tags-select{display:flex;flex-wrap:wrap;gap:6px;}
+.tag-opt{font-size:13px;padding:5px 12px;border-radius:999px;border:1px solid var(--border2);color:var(--text2);background:var(--bg);cursor:pointer;}
+.tag-opt.on{background:var(--blue-bg);color:var(--blue);border-color:var(--blue);}
+.dyn-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;}
+.dyn-row{display:flex;align-items:center;gap:8px;}
+.dyn-idx{font-size:13px;color:var(--text3);min-width:16px;text-align:right;}
+.dyn-row input,.dyn-row textarea{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;font-size:14px;color:var(--text);font-family:inherit;outline:none;}
+.dyn-row textarea{resize:none;line-height:1.5;}
+.amt-inp{width:72px!important;flex:none!important;}
+.dyn-del{background:none;border:1px solid var(--border2);border-radius:50%;width:24px;height:24px;color:var(--text3);cursor:pointer;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.add-row-btn{font-size:13px;color:var(--blue);cursor:pointer;padding:4px 0;display:inline-flex;align-items:center;gap:4px;background:none;border:none;}
+.btn-primary{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;}
+.btn-secondary{width:100%;padding:11px;background:none;color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius);font-size:15px;cursor:pointer;margin-top:8px;}
+.loading{text-align:center;padding:32px;color:var(--text3);}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:999px;font-size:14px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">我的食譜</div>
+    <button class="topbar-btn" id="topbar-action" onclick="topbarAction()">＋</button>
+  </div>
+
+  <div class="content" id="main-content">
+    <!-- 食譜庫 -->
+    <div class="page active" id="page-recipes">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="search-input" placeholder="搜尋食譜名稱或食材…" oninput="filterRecipes()">
+      </div>
+      <div class="tags-row" id="filter-tags">
+        <div class="tag active" onclick="filterTag(this,&#39;&#39;)">全部</div>
+        <div class="tag" onclick="filterTag(this,&#39;快炒&#39;)">快炒</div>
+        <div class="tag" onclick="filterTag(this,&#39;燉煮&#39;)">燉煮</div>
+        <div class="tag" onclick="filterTag(this,&#39;常備菜&#39;)">常備菜</div>
+        <div class="tag" onclick="filterTag(this,&#39;15分鐘&#39;)">15分鐘</div>
+        <div class="tag" onclick="filterTag(this,&#39;低卡&#39;)">低卡</div>
+        <div class="tag" onclick="filterTag(this,&#39;湯品&#39;)">湯品</div>
+        <div class="tag" onclick="filterTag(this,&#39;烘焙&#39;)">烘焙</div>
+      </div>
+      <div id="recipes-list"><div class="empty-state"><div class="empty-icon">🍽️</div><div>還沒有食譜<br>點右上角 ＋ 新增第一道！</div></div></div>
+    </div>
+
+    <!-- 食譜詳細 -->
+    <div class="page" id="page-detail">
+      <button class="back-btn" onclick="closeDetail()">← 返回食譜庫</button>
+      <div id="detail-content"></div>
+    </div>
+
+    <!-- 備菜 -->
+    <div class="page" id="page-prep">
+      <div class="seg">
+        <button class="seg-btn active" onclick="switchSeg(&#39;stock&#39;,this)">目前庫存</button>
+        <button class="seg-btn" onclick="switchSeg(&#39;method&#39;,this)">備菜方法</button>
+      </div>
+      <div id="prep-stock">
+        <div id="stock-list"><div class="loading">載入中…</div></div>
+        <button class="btn-secondary" style="margin-top:4px" onclick="openPrepForm()">＋ 記錄新備菜</button>
+      </div>
+      <div id="prep-method" style="display:none">
+        <div id="method-list"><div class="loading">載入中…</div></div>
+      </div>
+    </div>
+
+    <!-- 本週菜單 -->
+    <div class="page" id="page-week">
+      <div class="week-info" id="week-info">規劃本週菜單後，可自動產生採購清單 →</div>
+      <div class="sec-label">本週規劃</div>
+      <div class="week-grid" id="week-grid"><div class="week-cell" onclick="openWeekModal(&#39;mon&#39;,&#39;週一&#39;)">
+      <div class="week-day">週一</div>
+      <div class="week-meal empty">＋ 點擊新增</div>
+    </div><div class="week-cell" onclick="openWeekModal(&#39;tue&#39;,&#39;週二&#39;)">
+      <div class="week-day">週二</div>
+      <div class="week-meal empty">＋ 點擊新增</div>
+    </div><div class="week-cell today" onclick="openWeekModal(&#39;wed&#39;,&#39;週三&#39;)">
+      <div class="week-day">今天 · 週三</div>
+      <div class="week-meal empty">＋ 點擊新增</div>
+    </div><div class="week-cell" onclick="openWeekModal(&#39;thu&#39;,&#39;週四&#39;)">
+      <div class="week-day">週四</div>
+      <div class="week-meal empty">＋ 點擊新增</div>
+    </div><div class="week-cell" onclick="openWeekModal(&#39;fri&#39;,&#39;週五&#39;)">
+      <div class="week-day">週五</div>
+      <div class="week-meal empty">＋ 點擊新增</div>
+    </div><div class="week-cell" onclick="openWeekModal(&#39;sat&#39;,&#39;週六&#39;)">
+      <div class="week-day">週六</div>
+      <div class="week-meal empty">＋ 點擊新增</div>
+    </div><div class="week-cell" onclick="openWeekModal(&#39;sun&#39;,&#39;週日&#39;)">
+      <div class="week-day">週日</div>
+      <div class="week-meal empty">＋ 點擊新增</div>
+    </div></div>
+      <button class="btn-secondary" onclick="syncShoppingFromWeek()">🛒 從菜單產生採購清單</button>
+    </div>
+
+    <!-- 採購清單 -->
+    <div class="page" id="page-shop">
+      <div class="shop-progress">
+        <span style="font-size:13px;font-weight:600" id="shop-progress-text">採購進度</span>
+        <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+        <span style="font-size:13px;color:var(--text2)" id="shop-count">0/0</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="btn-secondary" style="margin-top:0;flex:1" onclick="openShopForm()">＋ 手動新增</button>
+        <button class="btn-secondary" style="margin-top:0;flex:1" onclick="clearCheckedShop()">清除已購</button>
+      </div>
+      <div id="shop-list"><div class="empty-state"><div class="empty-icon">🛒</div><div>採購清單是空的<br>從菜單自動產生或手動新增</div></div></div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab(&#39;recipes&#39;,this)" id="nav-recipes">
+      <span class="nav-icon">📖</span>食譜庫
+    </button>
+    <button class="nav-btn" onclick="switchTab(&#39;prep&#39;,this)" id="nav-prep">
+      <span class="nav-icon">🥦</span>備菜
+    </button>
+    <button class="nav-btn" onclick="switchTab(&#39;week&#39;,this)" id="nav-week">
+      <span class="nav-icon">📅</span>本週菜單
+    </button>
+    <button class="nav-btn" onclick="switchTab(&#39;shop&#39;,this)" id="nav-shop">
+      <span class="nav-icon">🛒</span>採購清單
+    </button>
+  </nav>
+  <button class="fab" id="fab" onclick="fabAction()" style="display: none;">＋</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 新增/編輯食譜 Modal -->
+<div class="modal-overlay" id="modal-recipe">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="recipe-modal-title">新增食譜</div>
+    <input type="hidden" id="recipe-id">
+    <div class="field">
+      <div class="field-label">料理名稱 *</div>
+      <input type="text" id="r-name" placeholder="例：蒜香奶油嫩煎雞腿">
+    </div>
+    <div class="field">
+      <div class="field-label">Emoji（代表圖示）</div>
+      <input type="text" id="r-emoji" placeholder="例：🥩" maxlength="2">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <div class="field-label">烹調時間</div>
+        <input type="text" id="r-time" placeholder="例：25分鐘">
+      </div>
+      <div class="field">
+        <div class="field-label">份量</div>
+        <input type="text" id="r-servings" placeholder="例：2人份">
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">難度</div>
+      <select id="r-difficulty">
+        <option value="">選擇難度</option>
+        <option>超簡單</option><option>簡單</option><option>中等</option><option>進階</option>
+      </select>
+    </div>
+    <div class="field">
+      <div class="field-label">分類標籤</div>
+      <div class="tags-select" id="r-tags">
+        <div class="tag-opt" onclick="toggleTagOpt(this)">快炒</div>
+        <div class="tag-opt" onclick="toggleTagOpt(this)">燉煮</div>
+        <div class="tag-opt" onclick="toggleTagOpt(this)">常備菜</div>
+        <div class="tag-opt" onclick="toggleTagOpt(this)">15分鐘</div>
+        <div class="tag-opt" onclick="toggleTagOpt(this)">低卡</div>
+        <div class="tag-opt" onclick="toggleTagOpt(this)">湯品</div>
+        <div class="tag-opt" onclick="toggleTagOpt(this)">烘焙</div>
+        <div class="tag-opt" onclick="toggleTagOpt(this)">涼拌</div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">食材清單</div>
+      <div class="dyn-list" id="r-ingredients"></div>
+      <button class="add-row-btn" onclick="addIngRow()">＋ 新增食材</button>
+    </div>
+    <div class="field">
+      <div class="field-label">烹調步驟</div>
+      <div class="dyn-list" id="r-steps"></div>
+      <button class="add-row-btn" onclick="addStepRow()">＋ 新增步驟</button>
+    </div>
+    <div class="field">
+      <div class="field-label">備菜提示（選填）</div>
+      <div class="dyn-list" id="r-preps"></div>
+      <button class="add-row-btn" onclick="addPrepRow()">＋ 新增備菜提示</button>
+    </div>
+    <div class="field">
+      <div class="field-label">個人筆記（選填）</div>
+      <textarea id="r-notes" rows="3" placeholder="記錄心得、調整比例、下次想嘗試的變化…"></textarea>
+    </div>
+    <button class="btn-primary" onclick="saveRecipe()">儲存食譜</button>
+    <button class="btn-secondary" onclick="closeModal(&#39;modal-recipe&#39;)">取消</button>
+  </div>
+</div>
+
+<!-- 備菜庫存 Modal -->
+<div class="modal-overlay" id="modal-prep">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">記錄備菜</div>
+    <input type="hidden" id="prep-id">
+    <div class="field">
+      <div class="field-label">菜名 *</div>
+      <input type="text" id="p-name" placeholder="例：日式照燒青花菜">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <div class="field-label">備菜日期</div>
+        <input type="date" id="p-prepDate">
+      </div>
+      <div class="field">
+        <div class="field-label">到期日期</div>
+        <input type="date" id="p-expiryDate">
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">保存方式</div>
+      <select id="p-storage">
+        <option>冷藏</option><option>冷凍</option><option>室溫</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="savePrep()">儲存</button>
+    <button class="btn-secondary" onclick="closeModal(&#39;modal-prep&#39;)">取消</button>
+  </div>
+</div>
+
+<!-- 採購項目 Modal -->
+<div class="modal-overlay" id="modal-shop">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">新增採購項目</div>
+    <div class="field">
+      <div class="field-label">品項名稱 *</div>
+      <input type="text" id="s-name" placeholder="例：去骨雞腿肉">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <div class="field-label">數量</div>
+        <input type="text" id="s-amount" placeholder="例：2片">
+      </div>
+      <div class="field">
+        <div class="field-label">分類</div>
+        <select id="s-category">
+          <option>肉品</option><option>蔬菜</option><option>海鮮</option>
+          <option>豆製品</option><option>調味料</option><option>乾貨</option><option>其他</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="saveShopItem()">新增</button>
+    <button class="btn-secondary" onclick="closeModal(&#39;modal-shop&#39;)">取消</button>
+  </div>
+</div>
+
+<!-- 週菜單 Modal -->
+<div class="modal-overlay" id="modal-week">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="week-modal-day"></div>
+    <input type="hidden" id="week-day-key">
+    <div class="field">
+      <div class="field-label">選擇食譜</div>
+      <select id="w-recipe">
+        <option value="">（清空這天）</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="saveWeekMeal()">確認</button>
+    <button class="btn-secondary" onclick="closeModal(&#39;modal-week&#39;)">取消</button>
+  </div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwptWpZLL8ppveNZG0j1cG8VJlj-t5RUgFCBnzjTCRlq56AYTwQr4nz_-kANS8k0xiUCA/exec';
+
+let recipes = [];
+let prepItems = [];
+let shopItems = [];
+let weekPlan = JSON.parse(localStorage.getItem('weekPlan') || '{}');
+let currentTab = 'recipes';
+let currentFilterTag = '';
+
+const DAYS = ['週一','週二','週三','週四','週五','週六','週日'];
+const DAY_KEYS = ['mon','tue','wed','thu','fri','sat','sun'];
+const TAG_COLORS = {'快炒':'blue','燉煮':'blue','常備菜':'green','15分鐘':'amber','低卡':'green','湯品':'blue','烘焙':'amber','涼拌':'green'};
+const SHOP_CATS = ['肉品','蔬菜','海鮮','豆製品','調味料','乾貨','其他'];
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+async function api(params) {
+  const url = API + '?' + new URLSearchParams(params);
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function apiPost(body) {
+  const res = await fetch(API, {method:'POST', body: JSON.stringify(body)});
+  return res.json();
+}
+
+// ── Tab switching ──
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('page-detail').classList.remove('active');
+  const titles = {recipes:'我的食譜', prep:'備菜', week:'本週菜單', shop:'採購清單'};
+  document.getElementById('topbar-title').textContent = titles[tab];
+  document.getElementById('topbar-action').style.display = tab === 'recipes' ? '' : 'none';
+  document.getElementById('fab').style.display = (tab === 'prep' || tab === 'shop') ? '' : 'none';
+  if (tab === 'prep') { loadPrep(); loadMethodList(); }
+  if (tab === 'shop') renderShop();
+  if (tab === 'week') renderWeek();
+}
+
+function topbarAction() { openRecipeForm(); }
+
+function fabAction() {
+  if (currentTab === 'prep') openPrepForm();
+  else if (currentTab === 'shop') openShopForm();
+}
+
+// ── Recipes ──
+async function loadRecipes() {
+  try {
+    const r = await api({action:'getRecipes'});
+    const rows = r.data || [];
+    recipes = rows.slice(1).filter(row => row[0]).map(row => ({
+      id: row[0], name: row[1], time: row[2], servings: row[3], difficulty: row[4],
+      tags: safeJSON(row[5],[]), ingredients: safeJSON(row[6],[]),
+      steps: safeJSON(row[7],[]), prepTips: safeJSON(row[8],[]), notes: row[9]||''
+    }));
+  } catch(e) { recipes = []; }
+  renderRecipes();
+}
+
+function safeJSON(val, def) {
+  try { return JSON.parse(val); } catch(e) { return def; }
+}
+
+function renderRecipes() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  let list = recipes.filter(r => {
+    const matchTag = !currentFilterTag || (r.tags||[]).includes(currentFilterTag);
+    const matchQ = !q || r.name.toLowerCase().includes(q) || (r.ingredients||[]).some(i => (i.name||'').toLowerCase().includes(q));
+    return matchTag && matchQ;
+  });
+  const el = document.getElementById('recipes-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🍽️</div><div>還沒有食譜<br>點右上角 ＋ 新增第一道！</div></div>';
+    return;
+  }
+  el.innerHTML = list.map(r => `
+    <div class="recipe-card" onclick="openDetail('${r.id}')">
+      <div class="recipe-emoji">${r.emoji||'🍽️'}</div>
+      <div class="recipe-info">
+        <div class="recipe-name">${r.name}</div>
+        <div class="recipe-meta">${r.time ? '⏱ '+r.time : ''}${r.time && r.servings ? ' · ' : ''}${r.servings||''}${r.difficulty ? ' · '+r.difficulty : ''}</div>
+        <div class="recipe-tags">${(r.tags||[]).map(t=>`<span class="rtag ${TAG_COLORS[t]||''}">${t}</span>`).join('')}</div>
+      </div>
+    </div>`).join('');
+}
+
+function filterTag(el, tag) {
+  document.querySelectorAll('.tags-row .tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentFilterTag = tag;
+  renderRecipes();
+}
+
+function filterRecipes() { renderRecipes(); }
+
+function openDetail(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('page-recipes').classList.remove('active');
+  document.getElementById('page-detail').classList.add('active');
+  document.getElementById('topbar-title').textContent = r.name;
+  document.getElementById('topbar-action').style.display = 'none';
+  document.getElementById('fab').style.display = 'none';
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-emoji">${r.emoji||'🍽️'}</div>
+      <div>
+        <div class="detail-title">${r.name}</div>
+        <div class="detail-sub">${[r.time, r.servings, r.difficulty].filter(Boolean).join(' · ')}</div>
+        <div class="recipe-tags" style="margin-top:6px">${(r.tags||[]).map(t=>`<span class="rtag ${TAG_COLORS[t]||''}">${t}</span>`).join('')}</div>
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="action-btn" onclick="openRecipeForm('${r.id}')">✏️ 編輯</button>
+      <button class="action-btn danger" onclick="deleteRecipe('${r.id}')">🗑 刪除</button>
+    </div>
+    ${r.ingredients&&r.ingredients.length ? `<div class="card"><div class="card-title">食材</div>${r.ingredients.map(i=>`<div class="ingredient-row"><span class="ing-amt">${i.amount||''}</span><span>${i.name||''}</span></div>`).join('')}</div>` : ''}
+    ${r.steps&&r.steps.length ? `<div class="card"><div class="card-title">步驟</div>${r.steps.map((s,i)=>`<div class="step-row"><div class="step-num">${i+1}</div><div>${s}</div></div>`).join('')}</div>` : ''}
+    ${r.prepTips&&r.prepTips.length ? `<div class="card"><div class="card-title">備菜提示</div>${r.prepTips.map(t=>`<div class="prep-tip"><div class="prep-dot"></div><div>${t}</div></div>`).join('')}</div>` : ''}
+    ${r.notes ? `<div class="card"><div class="card-title">個人筆記</div><div style="font-size:14px;line-height:1.7;color:var(--text2)">${r.notes}</div></div>` : ''}
+  `;
+}
+
+function closeDetail() {
+  document.getElementById('page-detail').classList.remove('active');
+  document.getElementById('page-recipes').classList.add('active');
+  document.getElementById('topbar-title').textContent = '我的食譜';
+  document.getElementById('topbar-action').style.display = '';
+}
+
+// Recipe form
+function openRecipeForm(id) {
+  const modal = document.getElementById('modal-recipe');
+  clearRecipeForm();
+  if (id) {
+    const r = recipes.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('recipe-modal-title').textContent = '編輯食譜';
+    document.getElementById('recipe-id').value = r.id;
+    document.getElementById('r-name').value = r.name||'';
+    document.getElementById('r-emoji').value = r.emoji||'';
+    document.getElementById('r-time').value = r.time||'';
+    document.getElementById('r-servings').value = r.servings||'';
+    document.getElementById('r-difficulty').value = r.difficulty||'';
+    document.getElementById('r-notes').value = r.notes||'';
+    document.querySelectorAll('#r-tags .tag-opt').forEach(el => {
+      if ((r.tags||[]).includes(el.textContent)) el.classList.add('on');
+    });
+    (r.ingredients||[]).forEach(i => addIngRow(i.amount, i.name));
+    (r.steps||[]).forEach(s => addStepRow(s));
+    (r.prepTips||[]).forEach(t => addPrepRow(t));
+  } else {
+    document.getElementById('recipe-modal-title').textContent = '新增食譜';
+    addIngRow(); addStepRow();
+  }
+  modal.classList.add('open');
+}
+
+function clearRecipeForm() {
+  ['recipe-id','r-name','r-emoji','r-time','r-servings','r-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('r-difficulty').value = '';
+  document.querySelectorAll('#r-tags .tag-opt').forEach(el => el.classList.remove('on'));
+  document.getElementById('r-ingredients').innerHTML = '';
+  document.getElementById('r-steps').innerHTML = '';
+  document.getElementById('r-preps').innerHTML = '';
+}
+
+function addIngRow(amount='', name='') {
+  const c = document.getElementById('r-ingredients');
+  const n = c.children.length + 1;
+  const d = document.createElement('div'); d.className = 'dyn-row';
+  d.innerHTML = `<span class="dyn-idx">${n}</span>
+    <input class="amt-inp" placeholder="份量" value="${amount}">
+    <input placeholder="食材名稱" value="${name}">
+    <button class="dyn-del" onclick="delDynRow(this,'r-ingredients')">×</button>`;
+  c.appendChild(d);
+}
+
+function addStepRow(val='') {
+  const c = document.getElementById('r-steps');
+  const n = c.children.length + 1;
+  const d = document.createElement('div'); d.className = 'dyn-row'; d.style.alignItems = 'flex-start';
+  d.innerHTML = `<span class="dyn-idx" style="margin-top:9px">${n}</span>
+    <textarea rows="2" placeholder="描述這個步驟…">${val}</textarea>
+    <button class="dyn-del" style="margin-top:6px" onclick="delDynRow(this,'r-steps')">×</button>`;
+  c.appendChild(d);
+}
+
+function addPrepRow(val='') {
+  const c = document.getElementById('r-preps');
+  const d = document.createElement('div'); d.className = 'dyn-row';
+  d.innerHTML = `<input placeholder="例：前一晚醃好放冷藏" value="${val}" style="flex:1">
+    <button class="dyn-del" onclick="delDynRow(this,'r-preps')">×</button>`;
+  c.appendChild(d);
+}
+
+function delDynRow(btn, cid) {
+  const c = document.getElementById(cid);
+  if (c.children.length <= 1 && cid !== 'r-preps') return;
+  btn.closest('.dyn-row').remove();
+  reindexRows(cid);
+}
+
+function reindexRows(cid) {
+  document.querySelectorAll('#'+cid+' .dyn-idx').forEach((el,i) => el.textContent = i+1);
+}
+
+function toggleTagOpt(el) { el.classList.toggle('on'); }
+
+async function saveRecipe() {
+  const name = document.getElementById('r-name').value.trim();
+  if (!name) { showToast('請填寫料理名稱'); return; }
+  const id = document.getElementById('recipe-id').value || 'r_' + Date.now();
+  const tags = [...document.querySelectorAll('#r-tags .tag-opt.on')].map(el => el.textContent);
+  const ingredients = [...document.querySelectorAll('#r-ingredients .dyn-row')].map(row => {
+    const inputs = row.querySelectorAll('input');
+    return {amount: inputs[0].value.trim(), name: inputs[1].value.trim()};
+  }).filter(i => i.name);
+  const steps = [...document.querySelectorAll('#r-steps .dyn-row textarea')].map(el => el.value.trim()).filter(Boolean);
+  const prepTips = [...document.querySelectorAll('#r-preps .dyn-row input')].map(el => el.value.trim()).filter(Boolean);
+  const recipe = {
+    id, name,
+    emoji: document.getElementById('r-emoji').value.trim() || '🍽️',
+    time: document.getElementById('r-time').value.trim(),
+    servings: document.getElementById('r-servings').value.trim(),
+    difficulty: document.getElementById('r-difficulty').value,
+    tags, ingredients, steps, prepTips,
+    notes: document.getElementById('r-notes').value.trim()
+  };
+  showToast('儲存中…');
+  await apiPost({action:'saveRecipe', recipe});
+  closeModal('modal-recipe');
+  showToast('食譜已儲存 ✓');
+  await loadRecipes();
+  if (document.getElementById('page-detail').classList.contains('active')) openDetail(id);
+}
+
+async function deleteRecipe(id) {
+  if (!confirm('確定要刪除這道食譜嗎？')) return;
+  await apiPost({action:'deleteRecipe', id});
+  showToast('已刪除');
+  closeDetail();
+  await loadRecipes();
+}
+
+// ── Prep ──
+async function loadPrep() {
+  try {
+    const r = await api({action:'getPrep'});
+    const rows = r.data || [];
+    prepItems = rows.slice(1).filter(row => row[0]).map(row => ({
+      id:row[0], name:row[1], prepDate:row[2], expiryDate:row[3], storage:row[4]
+    }));
+  } catch(e) { prepItems = []; }
+  renderStockList();
+}
+
+function getDaysLeft(expiryDate) {
+  if (!expiryDate) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const exp = new Date(expiryDate); exp.setHours(0,0,0,0);
+  return Math.round((exp - today) / 86400000);
+}
+
+function renderStockList() {
+  const el = document.getElementById('stock-list');
+  if (!prepItems.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🥡</div><div>還沒有備菜記錄</div></div>';
+    return;
+  }
+  const sorted = [...prepItems].sort((a,b) => (getDaysLeft(a.expiryDate)||999) - (getDaysLeft(b.expiryDate)||999));
+  const urgent = sorted.filter(i => (getDaysLeft(i.expiryDate)||999) <= 1);
+  const ok = sorted.filter(i => (getDaysLeft(i.expiryDate)||999) > 1);
+  let html = '';
+  if (urgent.length) html += '<div class="sec-label">⚠ 即將到期</div>' + urgent.map(stockCard).join('');
+  if (ok.length) html += '<div class="sec-label">✅ 狀況良好</div>' + ok.map(stockCard).join('');
+  el.innerHTML = html;
+}
+
+function stockCard(item) {
+  const days = getDaysLeft(item.expiryDate);
+  let cls = '', badgeCls = 'badge-ok', badgeTxt = '';
+  if (days === null) { badgeTxt = '未設期限'; }
+  else if (days < 0) { cls = 'danger'; badgeCls = 'badge-danger'; badgeTxt = '已過期'; }
+  else if (days === 0) { cls = 'danger'; badgeCls = 'badge-danger'; badgeTxt = '今天到期'; }
+  else if (days === 1) { cls = 'warn'; badgeCls = 'badge-warn'; badgeTxt = '明天到期'; }
+  else { badgeTxt = `還有 ${days} 天`; }
+  return `<div class="stock-card ${cls}">
+    <div class="stock-dot" style="background:${cls==='danger'?'var(--red)':cls==='warn'?'var(--amber)':'var(--green)'}"></div>
+    <div class="stock-info">
+      <div class="stock-name">${item.name}</div>
+      <div class="stock-sub">備菜日：${item.prepDate||'—'} · ${item.storage||'冷藏'}</div>
+    </div>
+    <span class="stock-badge ${badgeCls}">${badgeTxt}</span>
+    <button class="stock-del" onclick="deletePrep('${item.id}')">×</button>
+  </div>`;
+}
+
+function loadMethodList() {
+  const el = document.getElementById('method-list');
+  const withPrep = recipes.filter(r => r.prepTips && r.prepTips.length);
+  if (!withPrep.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><div>在食譜裡填寫備菜提示<br>就會出現在這裡</div></div>';
+    return;
+  }
+  el.innerHTML = withPrep.map(r => `
+    <div class="method-card">
+      <div class="method-header" onclick="toggleMethod(this)">
+        <div class="method-emoji">${r.emoji||'🍽️'}</div>
+        <div class="method-name">${r.name}</div>
+        <div class="method-arrow">▶</div>
+      </div>
+      <div class="method-body">
+        ${r.prepTips.map(t=>`<div class="prep-tip"><div class="prep-dot"></div><div>${t}</div></div>`).join('')}
+        <button class="add-row-btn" style="margin-top:8px" onclick="openRecipeForm('${r.id}')">✏️ 編輯備菜提示</button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleMethod(header) {
+  const arrow = header.querySelector('.method-arrow');
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  document.querySelectorAll('.method-body').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.method-arrow').forEach(a => a.classList.remove('open'));
+  if (!isOpen) { body.classList.add('open'); arrow.classList.add('open'); }
+}
+
+function switchSeg(id, el) {
+  document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('prep-stock').style.display = id === 'stock' ? '' : 'none';
+  document.getElementById('prep-method').style.display = id === 'method' ? '' : 'none';
+}
+
+function openPrepForm() {
+  document.getElementById('prep-id').value = '';
+  document.getElementById('p-name').value = '';
+  document.getElementById('p-prepDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('p-expiryDate').value = '';
+  document.getElementById('p-storage').value = '冷藏';
+  document.getElementById('modal-prep').classList.add('open');
+}
+
+async function savePrep() {
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) { showToast('請填寫菜名'); return; }
+  const prep = {
+    id: document.getElementById('prep-id').value || 'p_' + Date.now(),
+    name, prepDate: document.getElementById('p-prepDate').value,
+    expiryDate: document.getElementById('p-expiryDate').value,
+    storage: document.getElementById('p-storage').value
+  };
+  await apiPost({action:'savePrep', prep});
+  closeModal('modal-prep');
+  showToast('備菜記錄已儲存 ✓');
+  await loadPrep();
+}
+
+async function deletePrep(id) {
+  if (!confirm('確定要刪除這筆備菜記錄嗎？')) return;
+  await apiPost({action:'deletePrep', id});
+  showToast('已刪除');
+  await loadPrep();
+}
+
+// ── Week ──
+function renderWeek() {
+  const today = new Date().getDay();
+  const todayKey = DAY_KEYS[today === 0 ? 6 : today - 1];
+  let html = '';
+  DAY_KEYS.forEach((key, i) => {
+    const meal = weekPlan[key];
+    const isToday = key === todayKey;
+    html += `<div class="week-cell${isToday?' today':''}" onclick="openWeekModal('${key}','${DAYS[i]}')">
+      <div class="week-day">${isToday?'今天 · ':''}${DAYS[i]}</div>
+      <div class="week-meal${meal?'':' empty'}">${meal||'＋ 點擊新增'}</div>
+    </div>`;
+  });
+  document.getElementById('week-grid').innerHTML = html;
+}
+
+function openWeekModal(key, dayName) {
+  document.getElementById('week-day-key').value = key;
+  document.getElementById('week-modal-day').textContent = dayName + '的菜單';
+  const sel = document.getElementById('w-recipe');
+  sel.innerHTML = '<option value="">（清空這天）</option>' +
+    recipes.map(r => `<option value="${r.name}"${weekPlan[key]===r.name?' selected':''}>${r.name}</option>`).join('');
+  document.getElementById('modal-week').classList.add('open');
+}
+
+function saveWeekMeal() {
+  const key = document.getElementById('week-day-key').value;
+  const val = document.getElementById('w-recipe').value;
+  if (val) weekPlan[key] = val; else delete weekPlan[key];
+  localStorage.setItem('weekPlan', JSON.stringify(weekPlan));
+  closeModal('modal-week');
+  renderWeek();
+}
+
+function syncShoppingFromWeek() {
+  const meals = Object.values(weekPlan).filter(Boolean);
+  if (!meals.length) { showToast('請先規劃本週菜單'); return; }
+  const added = [];
+  meals.forEach(mealName => {
+    const r = recipes.find(x => x.name === mealName);
+    if (!r) return;
+    (r.ingredients||[]).forEach(ing => {
+      if (!ing.name) return;
+      const exists = shopItems.find(s => s.name === ing.name);
+      if (!exists) {
+        shopItems.push({id:'s_'+Date.now()+'_'+Math.random(), name:ing.name, amount:ing.amount||'', category:'其他', checked:false});
+        added.push(ing.name);
+      }
+    });
+  });
+  if (!added.length) { showToast('食材都已在清單中了'); return; }
+  saveShopToServer();
+  switchTab('shop', document.getElementById('nav-shop'));
+  showToast(`已新增 ${added.length} 項食材 ✓`);
+}
+
+// ── Shopping ──
+async function loadShop() {
+  try {
+    const r = await api({action:'getShopping'});
+    const rows = r.data || [];
+    shopItems = rows.slice(1).filter(row => row[0]).map(row => ({
+      id:row[0], name:row[1], amount:row[2], category:row[3], checked:row[4]==='true'||row[4]===true
+    }));
+  } catch(e) { shopItems = []; }
+  renderShop();
+}
+
+function renderShop() {
+  const el = document.getElementById('shop-list');
+  if (!shopItems.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🛒</div><div>採購清單是空的<br>從菜單自動產生或手動新增</div></div>';
+    updateShopProgress();
+    return;
+  }
+  const byCat = {};
+  SHOP_CATS.forEach(c => byCat[c] = []);
+  shopItems.forEach(i => { (byCat[i.category] = byCat[i.category]||[]).push(i); });
+  let html = '';
+  SHOP_CATS.forEach(cat => {
+    const items = byCat[cat]||[];
+    if (!items.length) return;
+    html += `<div class="shop-cat-label">${cat}</div>`;
+    items.forEach(item => {
+      html += `<div class="shop-item${item.checked?' checked':''}" id="si_${item.id}">
+        <div class="shop-circle${item.checked?' done':''}" onclick="toggleShopItem('${item.id}')">${item.checked?'✓':''}</div>
+        <span class="shop-name" onclick="toggleShopItem('${item.id}')">${item.name}</span>
+        <span class="shop-amt">${item.amount||''}</span>
+        <button class="shop-del" onclick="deleteShopItem('${item.id}')">×</button>
+      </div>`;
+    });
+  });
+  el.innerHTML = html;
+  updateShopProgress();
+}
+
+function updateShopProgress() {
+  const total = shopItems.length;
+  const done = shopItems.filter(i => i.checked).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('shop-count').textContent = done + '/' + total;
+}
+
+function toggleShopItem(id) {
+  const item = shopItems.find(i => i.id === id);
+  if (!item) return;
+  item.checked = !item.checked;
+  renderShop();
+  saveShopToServer();
+}
+
+function deleteShopItem(id) {
+  shopItems = shopItems.filter(i => i.id !== id);
+  renderShop();
+  saveShopToServer();
+}
+
+function clearCheckedShop() {
+  shopItems = shopItems.filter(i => !i.checked);
+  renderShop();
+  saveShopToServer();
+  showToast('已清除購買項目');
+}
+
+async function saveShopToServer() {
+  await apiPost({action:'saveShopping', items: shopItems});
+}
+
+function openShopForm() {
+  document.getElementById('s-name').value = '';
+  document.getElementById('s-amount').value = '';
+  document.getElementById('s-category').value = '其他';
+  document.getElementById('modal-shop').classList.add('open');
+}
+
+function saveShopItem() {
+  const name = document.getElementById('s-name').value.trim();
+  if (!name) { showToast('請填寫品項名稱'); return; }
+  shopItems.push({
+    id: 's_' + Date.now(),
+    name,
+    amount: document.getElementById('s-amount').value.trim(),
+    category: document.getElementById('s-category').value,
+    checked: false
+  });
+  closeModal('modal-shop');
+  renderShop();
+  saveShopToServer();
+  showToast('已新增 ✓');
+}
+
+// ── Modal ──
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ── Init ──
+document.getElementById('topbar-action').style.display = '';
+document.getElementById('fab').style.display = 'none';
+renderWeek();
+loadRecipes();
+loadShop();
+</script>
+
+
+</body></html>
